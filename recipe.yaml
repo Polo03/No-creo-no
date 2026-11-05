@@ -1,0 +1,79 @@
+$engine: 3
+$onesync: on
+name: ESX Legacy RP (custom)
+author: Polo03
+description: Servidor de roleplay basado en ESX Legacy, con server.cfg y recursos propios descargados desde Polo03/No-creo-no.
+
+tasks:
+  # --- Base de datos primero (es lo que más suele fallar) ---
+  - action: connect_database
+
+  # --- Recursos por defecto de Cfx (sin el chat, ESX trae el suyo) ---
+  - action: download_github
+    src: https://github.com/citizenfx/cfx-server-data
+    ref: master
+    subpath: resources
+    dest: ./resources/[cfx-default]
+  - action: remove_path
+    path: ./resources/[cfx-default]/[gameplay]/chat
+
+  # --- Este repositorio: server.cfg + recursos propios ---
+  - action: download_github
+    src: https://github.com/Polo03/No-creo-no
+    ref: main
+    dest: ./tmp/repo
+  - action: move_path
+    src: ./tmp/repo/server.cfg
+    dest: ./server.cfg
+  - action: move_path
+    src: ./tmp/repo/resources/[custom]
+    dest: ./resources/[custom]
+
+  # --- ESX Legacy core + SQL ---
+  - action: download_github
+    src: https://github.com/esx-framework/esx-core
+    ref: main
+    dest: ./tmp/core
+  - action: query_database
+    file: ./tmp/core/[SQL]/legacy.sql
+  - action: move_path
+    src: ./tmp/core/[core]
+    dest: ./resources/[core]
+
+  # --- ESX Legacy addons (trabajos, concesionario, ambulancia, etc.) ---
+  - action: download_github
+    src: https://github.com/esx-framework/ESX-Legacy-Addons
+    ref: main
+    dest: ./tmp/addons
+    timeoutSeconds: 900
+  - action: move_path
+    src: ./tmp/addons/[esx_addons]
+    dest: ./resources/[esx_addons]
+
+  # --- Standalone ---
+  - action: download_github
+    src: https://github.com/Bob74/bob74_ipl
+    ref: master
+    dest: ./resources/[standalone]/bob74_ipl
+  - action: download_github
+    src: https://github.com/AvarianKnight/pma-voice
+    ref: main
+    dest: ./resources/[standalone]/pma-voice
+
+  - action: download_file
+    path: ./tmp/files/oxmysql.zip
+    url: https://github.com/overextended/oxmysql/releases/latest/download/oxmysql.zip
+  - action: unzip
+    src: ./tmp/files/oxmysql.zip
+    dest: ./resources/[standalone]
+
+  - action: download_file
+    path: ./tmp/files/ox_lib.zip
+    url: https://github.com/overextended/ox_lib/releases/latest/download/ox_lib.zip
+  - action: unzip
+    src: ./tmp/files/ox_lib.zip
+    dest: ./resources/[standalone]
+
+  # --- Limpieza ---
+  - action: remove_path
+    path: ./tmp
